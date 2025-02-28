@@ -1,34 +1,50 @@
 {
-  "name": "codemate",
-  "displayName": "CodeMate",
-  "icon": "images/logo.png",
-  "description": "Smart AI coding assistant",
-  "version": "0.0.1",
-  "publisher": "Om Patil",
-  "engines": {
-      "vscode": "^1.60.0"
-  },
-  "categories": [
-      "Other"
-  ],
-  "activationEvents": [
-      "onCommand:codemate.start"
-  ],
-  "main": "./main.js",
-  "contributes": {
-      "commands": [{
-          "command": "codemate.start",
-          "title": "Start CodeMate"
-      }]
-  },
-  "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-      "@types/vscode": "^1.60.0",
-      "vscode": "^1.1.37"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}
+    "name": "codemate",
+    "displayName": "CodeMate",
+    "icon": "images/logo.png", 
+    "description": "Smart AI coding assistant",
+    "version": "0.0.1",
+    "publisher": "Om Patil",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:codemate.start",
+        "onView:codemate.chatView"
+    ],
+    "main": "./main.js",
+    "contributes": {
+        "commands": [{
+            "command": "codemate.start",
+            "title": "Start CodeMate"
+        }],
+        "viewsContainers": {
+            "activitybar": [{
+                "id": "codemate-chat",
+                "title": "CodeMate Chat",
+                "icon": "images/logo.png"
+            }]
+        },
+        "views": {
+            "codemate-chat": [{
+                "type": "webview",
+                "id": "codemate.chatView", 
+                "name": "Chat with CodeMate"
+            }]
+        }
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@types/vscode": "^1.60.0",
+        "vscode": "^1.1.37"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+  }
+  
