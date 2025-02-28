@@ -1,4 +1,6 @@
 const vscode = require('vscode');
+const groqService = require('./groqService');
+
 
 function activate(context) {
     // Register original command
@@ -34,16 +36,48 @@ class ChatViewProvider {
     }
 
     resolveWebviewView(webviewView) {
-        const logoPath = vscode.Uri.joinPath(this._extensionUri, 'images', 'logo.png');
-        const logoUri = webviewView.webview.asWebviewUri(logoPath);
-
+        this._view = webviewView;
+        
         webviewView.webview.options = {
-            enableScripts: true
+            enableScripts: true,
+            localResourceRoots: [this._extensionUri]
         };
 
-        webviewView.webview.html = getChatViewContent(logoUri);
+        webviewView.webview.html = getChatViewContent(webviewView.webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'images', 'logo.png')));
+
+        webviewView.webview.onDidReceiveMessage(async message => {
+            if (message.type === 'message') {
+                try {
+                    // Show user message in chat
+                    webviewView.webview.postMessage({ 
+                        type: 'status', 
+                        content: 'Processing your request...' 
+                    });
+                    
+                    // Get response from Groq
+                    const response = await groqService.generateResponse(message.content);
+                    
+                    // Send response back to webview
+                    webviewView.webview.postMessage({ 
+                        type: 'response', 
+                        content: response 
+                    });
+                    
+                    // Log success
+                    console.log('Message processed successfully');
+                    
+                } catch (error) {
+                    console.log('Error details:', error);
+                    webviewView.webview.postMessage({ 
+                        type: 'response', 
+                        content: 'I encountered an issue processing your request. Please try again.' 
+                    });
+                }
+            }
+        });
     }
 }
+
 
 function getChatViewContent(logoUri) {
     return `<!DOCTYPE html>
@@ -95,7 +129,7 @@ function getChatViewContent(logoUri) {
             </style>
         </head>
         <body>
-            <img src="${logoUri}" alt="CodeMate Logo" class="logo">
+            <img src="${logoUri}" alt="CodeMate " class="logo">
             <div id="chat-container">
                 <div id="messages"></div>
                 <div id="input-container">
@@ -170,8 +204,20 @@ function getWebviewContent(logoUri) {
 }
 
 function deactivate() {
-    // Add cleanup code here
+    // Release WebView resources
+    if (panel) {
+        panel.dispose();
+    }
+    
+    // Clear any active Groq service connections
+    if (groqService) {
+        groqService = null;
+    }
+    
+    // Dispose of all registered commands and providers
+    context.subscriptions.forEach(sub => sub.dispose());
 }
+
 
 module.exports = {
     activate,

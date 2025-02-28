@@ -1,50 +1,101 @@
 {
     "name": "codemate",
     "displayName": "CodeMate",
-    "icon": "images/logo.png", 
-    "description": "Smart AI coding assistant",
+    "icon": "images/logo.png",
+    "description": "Smart AI coding assistant powered by advanced language models",
     "version": "0.0.1",
     "publisher": "Om Patil",
     "engines": {
-        "vscode": "^1.60.0"
+      "vscode": "^1.60.0"
     },
     "categories": [
-        "Other"
+      "Programming Languages",
+      "Machine Learning",
+      "Snippets",
+      "Other"
     ],
     "activationEvents": [
-        "onCommand:codemate.start",
-        "onView:codemate.chatView"
+      "onStartupFinished",
+      "onCommand:codemate.start",
+      "onCommand:codemate.explain",
+      "onCommand:codemate.fix",
+      "onCommand:codemate.test",
+      "onView:codemate.chatView"
     ],
     "main": "./main.js",
     "contributes": {
-        "commands": [{
-            "command": "codemate.start",
-            "title": "Start CodeMate"
-        }],
-        "viewsContainers": {
-            "activitybar": [{
-                "id": "codemate-chat",
-                "title": "CodeMate Chat",
-                "icon": "images/logo.png"
-            }]
+      "commands": [
+        {
+          "command": "codemate.start",
+          "title": "Start CodeMate"
         },
-        "views": {
-            "codemate-chat": [{
-                "type": "webview",
-                "id": "codemate.chatView", 
-                "name": "Chat with CodeMate"
-            }]
+        {
+          "command": "codemate.explain",
+          "title": "CodeMate: Explain Selected Code"
+        },
+        {
+          "command": "codemate.fix",
+          "title": "CodeMate: Fix Code Issues"
+        },
+        {
+          "command": "codemate.test",
+          "title": "CodeMate: Generate Tests"
         }
+      ],
+      "viewsContainers": {
+        "activitybar": [
+          {
+            "id": "codemate-sidebar",
+            "title": "CodeMate",
+            "icon": "images/logo.png"
+          }
+        ]
+      },
+      "views": {
+        "codemate-sidebar": [
+          {
+            "type": "webview",
+            "id": "codemate.chatView",
+            "name": "Chat with CodeMate"
+          }
+        ]
+      },
+      "menus": {
+        "editor/context": [
+          {
+            "command": "codemate.explain",
+            "when": "editorHasSelection",
+            "group": "navigation"
+          },
+          {
+            "command": "codemate.fix",
+            "when": "editorHasSelection",
+            "group": "navigation"
+          },
+          {
+            "command": "codemate.test",
+            "when": "editorHasSelection",
+            "group": "navigation"
+          }
+        ]
+      }
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+      "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@types/vscode": "^1.60.0",
-        "vscode": "^1.1.37"
+      "@types/vscode": "^1.60.0",
+      "vscode": "^1.1.37",
+      "groq-sdk": "^0.3.0"
     },
-    "keywords": [],
-    "author": "",
+    "keywords": [
+      "ai",
+      "code-assistant",
+      "productivity",
+      "code-explanation",
+      "testing"
+    ],
+    "author": "Om Patil",
     "license": "ISC"
   }
   
