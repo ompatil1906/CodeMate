@@ -18,15 +18,16 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "codemateSidebar",
+          "id": "codemate",
           "title": "CodeMate",
           "icon": "logo.png"
         }
       ]
     },
     "views": {
-      "codemateSidebar": [
+      "codemate": [
         {
+          "type": "webview",
           "id": "codemateView",
           "name": "CodeMate Assistant"
         }
