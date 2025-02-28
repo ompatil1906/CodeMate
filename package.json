@@ -1,0 +1,34 @@
+{
+  "name": "codemate",
+  "displayName": "CodeMate",
+  "icon": "images/logo.png",
+  "description": "Smart AI coding assistant",
+  "version": "0.0.1",
+  "publisher": "Om Patil",
+  "engines": {
+      "vscode": "^1.60.0"
+  },
+  "categories": [
+      "Other"
+  ],
+  "activationEvents": [
+      "onCommand:codemate.start"
+  ],
+  "main": "./main.js",
+  "contributes": {
+      "commands": [{
+          "command": "codemate.start",
+          "title": "Start CodeMate"
+      }]
+  },
+  "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+      "@types/vscode": "^1.60.0",
+      "vscode": "^1.1.37"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
