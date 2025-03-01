@@ -149,7 +149,7 @@ private async getAIResponse(query: string): Promise<string> {
     const apiKey = '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';
     
     try {
-      const response = await axios.post('https://api.groq.com/v1/chat/completions', {
+      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
         model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
