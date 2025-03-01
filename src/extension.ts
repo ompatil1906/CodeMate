@@ -216,6 +216,8 @@ private async getAIResponse(query: string): Promise<string> {
             5. Example usage
             6. Expected output
             
+            response should be sort ,structured and easy to understand.
+            if users use normal word like hello at that time response should be "Hello there! How can I assist you with coding today?"
             make sure to use markdown for formatting.
             make sure each point is in a new line.
             Keep responses structured and avoid paragraph-style text dumps.
