@@ -1,24 +1,38 @@
 import * as vscode from "vscode";
 import axios from 'axios';
+import * as marked from 'marked';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("✅ CodeMate Extension Activated");
+
   const provider = new CodeMateViewProvider(context.extensionUri);
-  
   const registration = vscode.window.registerWebviewViewProvider("codemateView", provider);
-  console.log("📍 WebView Provider Registered");
-  
+
   context.subscriptions.push(registration);
+
+  // 🔥 Capture Debug Console Logs & Send to WebView
+  const originalLog = console.log;
+  console.log = (...args) => {
+      originalLog(...args);  // Keep original behavior
+      provider.sendToWebView(args.join(" "));  // Send log to WebView
+  };
 }
+
   
 class CodeMateViewProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
   
     constructor(private readonly extensionUri: vscode.Uri) {}
+     // 🟢 Send messages from Debug Console to WebView
+          sendToWebView(message: string) {
+            if (this._view) {
+                this._view.webview.postMessage({ type: "debug", text: message });
+            }
+        }
   
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
       this._view = webviewView;
-      webviewView.webview.options = { enableScripts: true };
+      webviewView.webview.options = { enableScripts: true };   
   
       // Add message handler
       webviewView.webview.onDidReceiveMessage(async (message) => {

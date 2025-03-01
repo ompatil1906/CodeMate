@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as marked from 'marked';
 
 export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "codemateView";
@@ -13,9 +14,12 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
     };
 
-    webviewView.webview.onDidReceiveMessage(async (message) => {
-      await this.handleMessage(message);
-    });
+    webviewView.webview.onDidReceiveMessage((message) => {
+      if (message.type === "userInput") {
+          console.log("User asked:", message.text);  // This will be captured in WebView chat
+      }
+  });
+  
 
     // ✅ Pass webview as an argument
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview, this.context.extensionUri);
@@ -51,7 +55,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     
     return response;
   }
-
+     
   private getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
     // Get the local URI for marked.js
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'marked.min.js'));
