@@ -6,7 +6,10 @@
   "engines": {
     "vscode": "^1.75.0"
   },
-  "categories": ["Machine Learning", "Programming Languages"],
+  "categories": [
+    "Machine Learning",
+    "Programming Languages"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -44,12 +47,15 @@
       }
     }
   },
-  "extensionDependencies": ["ms-vscode.vscode-typescript-next"],
+  "extensionDependencies": [
+    "ms-vscode.vscode-typescript-next"
+  ],
   "scripts": {
     "watch": "tsc -watch -p ./",
     "compile": "tsc -p ./"
   },
   "devDependencies": {
+    "@types/node": "^22.13.8",
     "@types/vscode": "^1.75.0",
     "typescript": "^4.9.5"
   },

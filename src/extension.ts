@@ -148,6 +148,8 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
     `;
 }
 
+
+
 private async getAIResponse(query: string): Promise<string> {
     const apiKey = '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';
     
