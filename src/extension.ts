@@ -146,11 +146,11 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
 }
 
 private async getAIResponse(query: string): Promise<string> {
-    const apiKey = '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';
+    const apiKey = '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';
     
     try {
-      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-        model: "llama2-70b-4096",
+      const response = await axios.post('https://api.groq.com/openai/v1', {
+        model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
           content: query

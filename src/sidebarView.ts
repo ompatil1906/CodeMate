@@ -111,7 +111,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   }
   private async getAIResponse(query: string): Promise<string> {
       try {
-          const apiKey = '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'; // Direct API key implementation
+          const apiKey = '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'; // Direct API key implementation
         
           const response = await fetch('https://api.groq.com/openai/v1', {
               method: 'POST',
