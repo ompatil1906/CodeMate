@@ -34,73 +34,142 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       <html>
         <head>
           <style>
+            :root {
+              --primary-color: #007acc;
+              --hover-color: #0098ff;
+            }
+            
             body { 
-                font-family: Arial, sans-serif; 
-                padding: 10px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 15px;
                 background: var(--vscode-editor-background);
+                color: var(--vscode-editor-foreground);
             }
+            
+            .header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 15px;
+                background: var(--vscode-titleBar-activeBackground);
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .logo {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 10px;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            h3 {
+                margin: 0;
+                color: var(--vscode-titleBar-activeForeground);
+                font-size: 1.2em;
+            }
+            
             #chat { 
-              margin: 10px 0;
-              height: 300px;
-              overflow-y: auto;
-              border: 1px solid var(--vscode-input-border);
-              padding: 10px;
-              border-radius: 6px;
+                height: calc(100vh - 250px);
+                overflow-y: auto;
+                border: 1px solid var(--vscode-input-border);
+                padding: 15px;
+                border-radius: 8px;
+                margin: 15px 0;
             }
+            
             .message { 
-                margin: 10px 0;
-                padding: 12px;
-                border-radius: 6px;
+                margin: 12px 0;
+                padding: 15px;
+                border-radius: 8px;
+                animation: fadeIn 0.3s ease;
             }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
             .user-message { 
                 background: var(--vscode-editor-selectionBackground);
-                color: var(--vscode-editor-foreground);
+                margin-left: 20px;
             }
+            
             .ai-message { 
                 background: var(--vscode-editor-inactiveSelectionBackground);
-                color: var(--vscode-editor-foreground);
+                margin-right: 20px;
             }
+            
             .code-block {
                 background: var(--vscode-editor-background);
                 border: 1px solid var(--vscode-input-border);
-                border-radius: 4px;
-                padding: 12px;
-                margin: 8px 0;
-                font-family: monospace;
+                border-radius: 6px;
+                padding: 15px;
+                margin: 10px 0;
+                font-family: 'Consolas', monospace;
                 white-space: pre-wrap;
+                position: relative;
             }
+            
+            .code-block::before {
+                content: 'Code';
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: var(--vscode-editor-background);
+                padding: 0 5px;
+                font-size: 0.8em;
+                color: var(--vscode-textLink-foreground);
+            }
+            
             #input { 
-              width: 100%;
-              margin: 10px 0;
-              padding: 8px;
-              border: 1px solid var(--vscode-input-border);
-              background: var(--vscode-input-background);
-              color: var(--vscode-input-foreground);
-              border-radius: 4px;
+                width: 100%;
+                padding: 12px;
+                border: 2px solid var(--vscode-input-border);
+                background: var(--vscode-input-background);
+                color: var(--vscode-input-foreground);
+                border-radius: 6px;
+                resize: vertical;
+                min-height: 60px;
+                transition: border-color 0.3s ease;
             }
+            
+            #input:focus {
+                border-color: var(--primary-color);
+                outline: none;
+            }
+            
             button {
-              background: var(--vscode-button-background);
-              color: var(--vscode-button-foreground);
-              border: none;
-              padding: 8px 16px;
-              cursor: pointer;
-              border-radius: 4px;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+                margin-top: 10px;
             }
-            .header {
-                background: var(--vscode-titleBar-activeBackground);
-                padding: 10px;
-                border-radius: 4px;
-                margin-bottom: 10px;
+            
+            button:hover {
+                background: var(--hover-color);
             }
           </style>
         </head>
         <body>
           <div class="header">
+            <img src="https://raw.githubusercontent.com/ompatil1906/CodeMate/main/logo.png" alt="CodeMate" class="logo">
             <h3>CodeMate AI Assistant</h3>
           </div>
           <div id="chat"></div>
-          <textarea id="input" placeholder="Type your coding question here..." rows="3"></textarea>
-          <button onclick="sendMessage()">Send</button>
+          <textarea id="input" placeholder="Ask me anything about coding..." rows="3"></textarea>
+          <button onclick="sendMessage()">Send Message</button>
 
           <script>
             const vscode = acquireVsCodeApi();
@@ -149,6 +218,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       </html>
     `;
 }
+
 
   private async getAIResponse(query: string): Promise<string> {
       try {
