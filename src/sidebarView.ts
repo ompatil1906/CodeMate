@@ -116,7 +116,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
             });
             window.addEventListener("message", (event) => {
               const responseBox = document.getElementById("response");
-              responseBox.innerHTML = event.data.text || "No response received.";
+              responseBox.innerHTML = event.data.text || "<p>No response received.</p>";
             });
           </script>
         </body>
@@ -124,7 +124,22 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   }
 
   private async getAIResponse(query: string): Promise<string> {
-    // Placeholder for AI integration
-    return `## Response for: ${query}\n\n* Example bullet point\n\n\`\`\`python\nprint("Hello, world!")\n\`\`\``;
-  }
+    // Placeholder AI response - Simulating formatted response
+    const formattedResponse = `
+      <h2>Introduction to Coding</h2>
+      <p>We can work on a wide range of programming topics, from basic syntax to advanced concepts.</p>
+      <h3>Available Services</h3>
+      <ul>
+        <li>Code reviews and debugging</li>
+        <li>Algorithm design and implementation</li>
+        <li>Data structure optimization</li>
+        <li>Programming language tutorials</li>
+      </ul>
+      <h3>Example Code</h3>
+      <pre><code class="language-python">print("Hello, World!")</code></pre>
+      <p>This code can be used as a starting point for more complex programs.</p>
+    `;
+    return formattedResponse;
+}
+
 }
