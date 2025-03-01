@@ -149,7 +149,7 @@ private async getAIResponse(query: string): Promise<string> {
     const apiKey = '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';
     
     try {
-      const response = await axios.post('https://api.groq.com/openai/v1', {
+      const response = await axios.post('https://api.groq.com/v1/chat/completions', {
         model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
@@ -164,8 +164,16 @@ private async getAIResponse(query: string): Promise<string> {
         }
       });
 
+      if (!response.data?.choices?.[0]?.message?.content) {
+        throw new Error('Invalid response format from API');
+      }
+
       return response.data.choices[0].message.content;
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('API Error:', error.response?.data || error.message);
+        throw new Error(`API Error: ${error.response?.data?.error?.message || error.message}`);
+      }
       console.error('AI Response Error:', error);
       throw new Error('Failed to get AI response');
     }
