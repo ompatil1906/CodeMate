@@ -17,8 +17,10 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       await this.handleMessage(message);
     });
 
-    webviewView.webview.html = this.getHtmlForWebview();
-  }
+    // ✅ Pass webview as an argument
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview, this.context.extensionUri);
+}
+
 
   private async handleMessage(message: { type: string; text?: string }) {
     switch (message.type) {
@@ -50,82 +52,31 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     return response;
   }
 
-  private getHtmlForWebview(): string {
+  private getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
+    // Get the local URI for marked.js
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'marked.min.js'));
+  
     return `
       <html>
         <head>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.12/marked.min.js"></script>
-          <style>
-            :root {
-              --primary-color: #007acc;
-              --background-color: #1e1e1e;
-              --text-color: #ffffff;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              background: var(--background-color);
-              color: var(--text-color);
-              margin: 0;
-              padding: 10px;
-            }
-            .container {
-              display: flex;
-              flex-direction: column;
-              gap: 10px;
-            }
-            textarea {
-              width: 100%;
-              height: 100px;
-              border-radius: 5px;
-              padding: 5px;
-              font-size: 14px;
-            }
-            button {
-              background: var(--primary-color);
-              color: white;
-              border: none;
-              padding: 10px;
-              cursor: pointer;
-              border-radius: 5px;
-            }
-            button:hover {
-              opacity: 0.8;
-            }
-            #response {
-              border: 1px solid #ccc;
-              padding: 10px;
-              background: #252526;
-              border-radius: 5px;
-              white-space: pre-wrap; /* Preserve new lines */
-            }
-          </style>
+          <script src="${scriptUri}"></script> <!-- ✅ Load Marked.js -->
+          <script>
+            console.log("Attempting to load marked.js...");
+          </script>
         </head>
         <body>
-          <div class="container">
-            <textarea id="input" placeholder="Ask me anything about coding..."></textarea>
-            <button id="send">Send</button>
-            <div id="response"></div>
-          </div>
+          <div id="response">Waiting for response...</div>
           <script>
-            const vscode = acquireVsCodeApi();
-  
-            document.getElementById("send").addEventListener("click", () => {
-              const input = document.getElementById("input").value;
-              vscode.postMessage({ type: "query", text: input });
-            });
-  
-            window.addEventListener("message", (event) => {
-              const responseBox = document.getElementById("response");
-              if (event.data.text) {
-                responseBox.innerHTML = marked.parse(event.data.text);
-              } else {
-                responseBox.innerHTML = "<p>No response received.</p>";
-              }
+            document.addEventListener("DOMContentLoaded", () => {
+              console.log("marked.js loaded:", typeof marked !== "undefined");
             });
           </script>
         </body>
-      </html>`;
+      </html>
+    `;
   }
+  
+  
   
   private async getAIResponse(query: string): Promise<string> {
     // Placeholder AI response - Simulating formatted response
