@@ -146,6 +146,8 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     });
                 }
 
+
+
                 function addMessage(text, isUser = false) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');

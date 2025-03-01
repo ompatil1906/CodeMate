@@ -54,6 +54,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     return `
       <html>
         <head>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.12/marked.min.js"></script>
           <style>
             :root {
               --primary-color: #007acc;
@@ -91,14 +92,11 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
               opacity: 0.8;
             }
             #response {
-              white-space: pre-wrap;
-              word-wrap: break-word;
-            }
-            pre {
-              background: #2d2d2d;
+              border: 1px solid #ccc;
               padding: 10px;
+              background: #252526;
               border-radius: 5px;
-              overflow-x: auto;
+              white-space: pre-wrap; /* Preserve new lines */
             }
           </style>
         </head>
@@ -110,19 +108,25 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
           </div>
           <script>
             const vscode = acquireVsCodeApi();
+  
             document.getElementById("send").addEventListener("click", () => {
               const input = document.getElementById("input").value;
               vscode.postMessage({ type: "query", text: input });
             });
+  
             window.addEventListener("message", (event) => {
               const responseBox = document.getElementById("response");
-              responseBox.innerHTML = event.data.text || "<p>No response received.</p>";
+              if (event.data.text) {
+                responseBox.innerHTML = marked.parse(event.data.text);
+              } else {
+                responseBox.innerHTML = "<p>No response received.</p>";
+              }
             });
           </script>
         </body>
       </html>`;
   }
-
+  
   private async getAIResponse(query: string): Promise<string> {
     // Placeholder AI response - Simulating formatted response
     const formattedResponse = `
