@@ -28,7 +28,7 @@
         {
           "id": "codemate",
           "title": "CodeMate",
-          "icon": "logo.svg"
+          "icon": "resources/dark/codemate.svg"
         }
       ]
     },

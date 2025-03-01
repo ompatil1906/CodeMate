@@ -1,0 +1,16 @@
+<svg width="55" height="55" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Matrix Background -->
+    <rect x="2" y="2" width="20" height="20" rx="3" stroke="currentColor" stroke-width="1.5"/>
+   
+    <!-- Dynamic Code Elements -->
+    <path d="M9 8L6 12L9 16" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+    </path>
+   
+    <path d="M15 8L18 12L15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" begin="1s"/>
+    </path>
+
+    <!-- Data Flow Lines -->
+    <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="0.5" stroke-dasharray="1 2"/>
+</svg>
