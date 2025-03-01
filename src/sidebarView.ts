@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
 
+
+
+
 export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "codemateView";
   private _view?: vscode.WebviewView;
@@ -28,6 +31,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtmlForWebview();
   }
+  
 
   private getHtmlForWebview(): string {
     return `
@@ -106,16 +110,23 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
                 margin-right: 20px;
             }
             
-            .code-block {
-                background: var(--vscode-editor-background);
-                border: 1px solid var(--vscode-input-border);
-                border-radius: 6px;
-                padding: 15px;
-                margin: 10px 0;
-                font-family: 'Consolas', monospace;
-                white-space: pre-wrap;
-                position: relative;
-            }
+              pre {
+                  background: var(--vscode-editor-background);
+                  border: 1px solid var(--vscode-input-border);
+                  border-radius: 6px;
+                  padding: 10px;
+                  margin: 10px 0;
+                  font-family: 'Consolas', monospace;
+                  overflow-x: auto;
+                  white-space: pre-wrap;
+              }
+
+              code {
+                  font-family: 'Consolas', monospace;
+                  font-size: 14px;
+                  color: var(--vscode-editor-foreground);
+              }
+
             
             .code-block::before {
                 content: 'Code';
@@ -174,6 +185,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
           <script>
             const vscode = acquireVsCodeApi();
             const chatDiv = document.getElementById('chat');
+
             
             function formatCodeBlocks(text) {
                 const codeBlockRegex = /\`\`\`[\s\S]*?\`\`\`/g;
@@ -220,6 +232,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
 }
 
 
+
   private async getAIResponse(query: string): Promise<string> {
       try {
           const apiKey = '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';
@@ -246,4 +259,6 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       } catch (error) {
           return `Error: Unable to get AI response. ${(error as Error).message}`;
       }
-  }}
+  }
+  
+}
