@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import axios from 'axios';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("✅ CodeMate Extension Activated");
@@ -14,6 +15,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
 
   constructor(private readonly extensionUri: vscode.Uri) {}
+  
 
   resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
     this._view = webviewView;
@@ -113,8 +115,17 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     }
                 });
             </script>
+            <script>
+                window.addEventListener('message', event => {
+                    const message = event.data;
+                    if (message.type === 'response') {
+                        addMessage('CodeMate: ' + message.text);
+                    }
+                });
+            </script>
         </body>
         </html>
     `;
 }
 }  
+
