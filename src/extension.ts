@@ -12,15 +12,32 @@ export function activate(context: vscode.ExtensionContext) {
 }
   
 class CodeMateViewProvider implements vscode.WebviewViewProvider {
-  private _view?: vscode.WebviewView;
-
-  constructor(private readonly extensionUri: vscode.Uri) {}
+    private _view?: vscode.WebviewView;
   
-
-  resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
-    this._view = webviewView;
-    webviewView.webview.options = { enableScripts: true };
-
+    constructor(private readonly extensionUri: vscode.Uri) {}
+  
+    resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
+      this._view = webviewView;
+      webviewView.webview.options = { enableScripts: true };
+  
+      // Add message handler
+      webviewView.webview.onDidReceiveMessage(async (message) => {
+        if (message.type === 'message') {
+          try {
+            const response = await this.getAIResponse(message.text);
+            webviewView.webview.postMessage({
+              type: 'response',
+              text: response
+            });
+          } catch (error) {
+            webviewView.webview.postMessage({
+              type: 'response',
+              text: `Error: ${(error as Error).message}`
+            });
+          }
+        }
+      });
+  
     webviewView.webview.html = `
         <!DOCTYPE html>
         <html lang="en">
@@ -127,5 +144,32 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
         </html>
     `;
 }
-}  
+
+private async getAIResponse(query: string): Promise<string> {
+    const apiKey = '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';
+    
+    try {
+      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+        model: "llama2-70b-4096",
+        messages: [{
+          role: "user",
+          content: query
+        }],
+        temperature: 0.7,
+        max_tokens: 150
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      console.error('AI Response Error:', error);
+      throw new Error('Failed to get AI response');
+    }
+  }
+}
+  
 
