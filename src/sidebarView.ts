@@ -59,19 +59,26 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     return `
       <html>
         <head>
-          <script src="${scriptUri}"></script> <!-- ✅ Load Marked.js -->
-          <script>
-            console.log("Attempting to load marked.js...");
-          </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         </head>
         <body>
-          <div id="response">Waiting for response...</div>
-          <script>
-            document.addEventListener("DOMContentLoaded", () => {
-              console.log("marked.js loaded:", typeof marked !== "undefined");
-            });
-          </script>
+            <div id="chat"></div>
+            <input id="userInput" type="text" />
+            <button onclick="sendMessage()">Send</button>
+            <script>
+                function renderMarkdown(text) {
+                    return marked.parse(text);
+                }
+
+                window.addEventListener("message", (event) => {
+                    const message = event.data;
+                    if (message.type === "response") {
+                        document.getElementById("chat").innerHTML += "<div>CodeMate: " + renderMarkdown(message.text) + "</div>";
+                    }
+                });s
+            </script>
         </body>
+
       </html>
     `;
   }
