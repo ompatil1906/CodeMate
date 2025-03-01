@@ -24,11 +24,30 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     switch (message.type) {
       case "query":
         const response = await this.getAIResponse(message.text || "");
-        this._view?.webview.postMessage({ type: "response", text: response });
+        const formattedResponse = this.formatResponse(response);
+        this._view?.webview.postMessage({ type: "response", text: formattedResponse });
         break;
       default:
         console.warn("Unknown message type:", message.type);
     }
+  }
+
+  private formatResponse(response: string): string {
+    // Convert markdown-style headers to HTML
+    response = response.replace(/## (.*?)\n/g, '<h2>$1</h2>');
+    response = response.replace(/### (.*?)\n/g, '<h3>$1</h3>');
+    
+    // Convert bullet points
+    response = response.replace(/\* (.*?)\n/g, '<li>$1</li>');
+    response = response.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+    
+    // Convert inline code
+    response = response.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // Convert code blocks
+    response = response.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    
+    return response;
   }
 
   private getHtmlForWebview(): string {
@@ -71,6 +90,16 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
             button:hover {
               opacity: 0.8;
             }
+            #response {
+              white-space: pre-wrap;
+              word-wrap: break-word;
+            }
+            pre {
+              background: #2d2d2d;
+              padding: 10px;
+              border-radius: 5px;
+              overflow-x: auto;
+            }
           </style>
         </head>
         <body>
@@ -87,7 +116,7 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
             });
             window.addEventListener("message", (event) => {
               const responseBox = document.getElementById("response");
-              responseBox.innerText = event.data.text || "No response received.";
+              responseBox.innerHTML = event.data.text || "No response received.";
             });
           </script>
         </body>
@@ -96,6 +125,6 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
 
   private async getAIResponse(query: string): Promise<string> {
     // Placeholder for AI integration
-    return `Response for: ${query}`;
+    return `## Response for: ${query}\n\n* Example bullet point\n\n\`\`\`python\nprint("Hello, world!")\n\`\`\``;
   }
 }

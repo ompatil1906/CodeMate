@@ -200,6 +200,8 @@ private async getAIResponse(query: string): Promise<string> {
             5. Example usage
             6. Expected output
             
+            make sure to use markdown for formatting.
+            make sure each point is in a new line.
             Keep responses structured and avoid paragraph-style text dumps.
             Use bullet points and numbered lists for clarity.`
         },
