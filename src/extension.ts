@@ -22,14 +22,17 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
   
       // Add message handler
       webviewView.webview.onDidReceiveMessage(async (message) => {
+        console.log('Received message from WebView:', message);
         if (message.type === 'message') {
           try {
             const response = await this.getAIResponse(message.text);
+            console.log('Sending response back to WebView:', response);
             webviewView.webview.postMessage({
               type: 'response',
               text: response
             });
           } catch (error) {
+            console.log('Error in message handling:', error);
             webviewView.webview.postMessage({
               type: 'response',
               text: `Error: ${(error as Error).message}`
@@ -149,6 +152,7 @@ private async getAIResponse(query: string): Promise<string> {
     const apiKey = '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';
     
     try {
+      console.log('Sending request to Groq API...');
       const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
         model: "llama-3.3-70b-versatile",
         messages: [{
@@ -164,20 +168,21 @@ private async getAIResponse(query: string): Promise<string> {
         }
       });
 
-      if (!response.data?.choices?.[0]?.message?.content) {
-        throw new Error('Invalid response format from API');
+      console.log('Response received:', response.data);
+
+      const aiResponse = response.data?.choices?.[0]?.message?.content;
+      if (!aiResponse) {
+        throw new Error('No response content from API');
       }
 
-      return response.data.choices[0].message.content;
+      return aiResponse;
     } catch (error) {
+      console.log('Full error details:', error);
       if (axios.isAxiosError(error)) {
-        console.error('API Error:', error.response?.data || error.message);
-        throw new Error(`API Error: ${error.response?.data?.error?.message || error.message}`);
+        return `API Error: ${error.response?.data?.error?.message || error.message}`;
       }
-      console.error('AI Response Error:', error);
-      throw new Error('Failed to get AI response');
+      return 'Failed to get AI response. Please try again.';
     }
-  }
-}
+  }}
   
 
