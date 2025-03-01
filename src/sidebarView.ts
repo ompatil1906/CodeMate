@@ -110,26 +110,30 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
     `;
   }
   private async getAIResponse(query: string): Promise<string> {
-    try {
-        // Add your AI API configuration
-        const apiKey = await vscode.workspace.getConfiguration().get('codemate.apiKey');
+      try {
+          const apiKey = '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'; // Direct API key implementation
         
-        const response = await fetch('YOUR_AI_ENDPOINT', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                prompt: query,
-                max_tokens: 150
-            })
-        });
+          const response = await fetch('https://api.groq.com/openai/v1', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${apiKey}`
+              },
+              body: JSON.stringify({
+                  model: "lama-3.3-70b-versatile",
+                  messages: [{
+                      role: "user",
+                      content: query
+                  }],
+                  temperature: 0.7,
+                  max_tokens: 150
+              })
+          });
 
-        const data = await response.json();
-        return data.choices[0].text;
-    } catch (error) {
-        return `Error: Unable to get AI response. ${(error as Error).message}`;
-    }
-}
+          const data = await response.json();
+          return data.choices[0].message.content;
+      } catch (error) {
+          return `Error: Unable to get AI response. ${(error as Error).message}`;
+      }
+  }
 }
