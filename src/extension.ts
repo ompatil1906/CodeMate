@@ -54,6 +54,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     margin: 0;
                     padding: 10px;
                     box-sizing: border-box;
+                    background: var(--vscode-editor-background);
                 }
                 body { 
                     display: flex;
@@ -83,6 +84,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     border: 1px solid var(--vscode-input-border);
                     background: var(--vscode-input-background);
                     color: var(--vscode-input-foreground);
+                    border-radius: 4px;
                 }
                 #sendButton {
                     padding: 8px 16px;
@@ -90,20 +92,44 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     color: var(--vscode-button-foreground);
                     border: none;
                     cursor: pointer;
+                    border-radius: 4px;
                 }
                 .message {
-                    margin: 5px 0;
-                    padding: 8px;
-                    border-radius: 4px;
+                    margin: 10px 0;
+                    padding: 12px;
+                    border-radius: 6px;
                     background: var(--vscode-editor-selectionBackground);
+                }
+                .code-block {
+                    background: var(--vscode-editor-background);
+                    border: 1px solid var(--vscode-input-border);
+                    border-radius: 4px;
+                    padding: 12px;
+                    margin: 8px 0;
+                    font-family: monospace;
+                    white-space: pre-wrap;
+                }
+                .header {
+                    background: var(--vscode-titleBar-activeBackground);
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin-bottom: 10px;
+                }
+                .user-message {
+                    background: var(--vscode-editor-selectionBackground);
+                }
+                .ai-message {
+                    background: var(--vscode-editor-inactiveSelectionBackground);
                 }
             </style>
         </head>
         <body>
-            <h2>CodeMate AI Assistant</h2>
+            <div class="header">
+                <h2>CodeMate AI Assistant</h2>
+            </div>
             <div id="chat"></div>
             <div class="input-container">
-                <input type="text" id="userInput" placeholder="Ask me anything...">
+                <input type="text" id="userInput" placeholder="Ask me anything about coding...">
                 <button id="sendButton">Send</button>
             </div>
             <script>
@@ -112,10 +138,18 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 const userInput = document.getElementById('userInput');
                 const sendButton = document.getElementById('sendButton');
 
-                function addMessage(text) {
+                function formatCodeBlocks(text) {
+                    // Detect code blocks and wrap them
+                    const codeBlockRegex = /\`\`\`[\s\S]*?\`\`\`/g;
+                    return text.replace(codeBlockRegex, match => {
+                        return '<div class="code-block">' + match + '</div>';
+                    });
+                }
+
+                function addMessage(text, isUser = false) {
                     const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message';
-                    messageDiv.textContent = text;
+                    messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
+                    messageDiv.innerHTML = formatCodeBlocks(text);
                     chatDiv.appendChild(messageDiv);
                     chatDiv.scrollTop = chatDiv.scrollHeight;
                 }
@@ -123,7 +157,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 sendButton.addEventListener('click', () => {
                     const message = userInput.value.trim();
                     if (message) {
-                        addMessage('You: ' + message);
+                        addMessage('You: ' + message, true);
                         userInput.value = '';
                         vscode.postMessage({ type: 'message', text: message });
                     }
@@ -134,8 +168,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                         sendButton.click();
                     }
                 });
-            </script>
-            <script>
+
                 window.addEventListener('message', event => {
                     const message = event.data;
                     if (message.type === 'response') {
@@ -158,11 +191,24 @@ private async getAIResponse(query: string): Promise<string> {
       const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
         model: "llama-3.3-70b-versatile",
         messages: [{
+          role: "system",
+          content: `You are a coding expert. Format your responses with:
+            1. A positive opening statement
+            2. Clear section headers using markdown (##)
+            3. Code blocks with language specification
+            4. Step-by-step explanations
+            5. Example usage
+            6. Expected output
+            
+            Keep responses structured and avoid paragraph-style text dumps.
+            Use bullet points and numbered lists for clarity.`
+        },
+        {
           role: "user",
           content: query
         }],
         temperature: 0.7,
-        max_tokens: 150
+        max_tokens: 1500
       }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -170,9 +216,7 @@ private async getAIResponse(query: string): Promise<string> {
         }
       });
 
-      console.log('Response received:', response.data);
-
-      const aiResponse = response.data?.choices?.[0]?.message?.content;
+      let aiResponse = response.data?.choices?.[0]?.message?.content;
       if (!aiResponse) {
         throw new Error('No response content from API');
       }
@@ -185,6 +229,5 @@ private async getAIResponse(query: string): Promise<string> {
       }
       return 'Failed to get AI response. Please try again.';
     }
-  }}
-  
-
+}
+}
