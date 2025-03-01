@@ -109,9 +109,27 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       </html>
     `;
   }
-
   private async getAIResponse(query: string): Promise<string> {
-    // Replace this with your actual AI integration
-    return `I received your question: "${query}". Here's my response...`;
-  }
+    try {
+        // Add your AI API configuration
+        const apiKey = await vscode.workspace.getConfiguration().get('codemate.apiKey');
+        
+        const response = await fetch('YOUR_AI_ENDPOINT', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                prompt: query,
+                max_tokens: 150
+            })
+        });
+
+        const data = await response.json();
+        return data.choices[0].text;
+    } catch (error) {
+        return `Error: Unable to get AI response. ${(error as Error).message}`;
+    }
+}
 }

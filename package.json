@@ -32,6 +32,16 @@
           "name": "CodeMate Assistant"
         }
       ]
+    },
+    "configuration": {
+      "title": "CodeMate",
+      "properties": {
+        "codemate.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API Key for AI service"
+        }
+      }
     }
   },
   "extensionDependencies": ["ms-vscode.vscode-typescript-next"],
