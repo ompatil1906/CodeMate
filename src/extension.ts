@@ -12,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
 class CodeMateViewProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
     private readonly apiKey: string = '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';
+    
 
     constructor(private readonly extensionUri: vscode.Uri) {}
 
