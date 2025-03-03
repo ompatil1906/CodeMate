@@ -11,15 +11,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 class CodeMateViewProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
-    private readonly apiKey = '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';
-  
+    private readonly apiKey: string = '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';
+
     constructor(private readonly extensionUri: vscode.Uri) {}
-  
-    resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
+
+    public resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ): void {
         this._view = webviewView;
-        webviewView.webview.options = { enableScripts: true };   
-  
-        webviewView.webview.onDidReceiveMessage(async (message) => {
+        webviewView.webview.options = { enableScripts: true };
+
+        webviewView.webview.html = this.getHtmlContent();
+
+        webviewView.webview.onDidReceiveMessage(async (message: any) => {
             if (message.type === 'message') {
                 try {
                     const response = await this.getAIResponse(message.text);
@@ -30,49 +36,46 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 } catch (error) {
                     webviewView.webview.postMessage({
                         type: 'response',
-                        text: `Error: ${(error as Error).message}`
+                        text: `Error: ${error instanceof Error ? error.message : String(error)}`
                     });
                 }
             }
         });
-
-        webviewView.webview.html = this.getWebviewContent();
     }
 
-    private getWebviewContent(): string {
+    private getHtmlContent(): string {
         return `<!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>CodeMate Assistant</title>
-                <style>
-                    /* Your existing styles */
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h2>CodeMate AI Assistant</h2>
-                </div>
-                <div id="chat"></div>
-                <div class="input-container">
-                    <input type="text" id="userInput" placeholder="Ask me anything about coding...">
-                    <button id="sendButton">Send</button>
-                </div>
-                <script>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>CodeMate Assistant</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.3/marked.min.js"></script>
+            <style>
+                /* Your existing styles here */
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>CodeMate AI Assistant</h2>
+            </div>
+            <div id="chat"></div>
+            <div class="input-container">
+                <input type="text" id="userInput" placeholder="Ask me anything about coding...">
+                <button id="sendButton">Send</button>
+            </div>
+            <script>
+                (function() {
                     const vscode = acquireVsCodeApi();
                     const chatDiv = document.getElementById('chat');
                     const userInput = document.getElementById('userInput');
                     const sendButton = document.getElementById('sendButton');
 
                     function formatMessage(text) {
-                        return text.replace(/\`\`\`(\\w+)?\\n([\\s\\S]*?)\`\`\`/g, (match, lang, code) => {
-                            const langClass = lang ? \`language-\${lang}\` : '';
-                            return \`<div class="code-block"><pre><code class="\${langClass}">\${code.trim()}</code></pre></div>\`;
-                        });
+                        return marked.parse(text);
                     }
 
-                    function addMessage(text, isUser = false) {
+                    function addMessage(text, isUser) {
                         const messageDiv = document.createElement('div');
                         messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
                         messageDiv.innerHTML = formatMessage(text);
@@ -83,7 +86,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     sendButton.addEventListener('click', () => {
                         const message = userInput.value.trim();
                         if (message) {
-                            addMessage('You: ' + message, true);
+                            addMessage(message, true);
                             userInput.value = '';
                             vscode.postMessage({ type: 'message', text: message });
                         }
@@ -98,12 +101,13 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     window.addEventListener('message', event => {
                         const message = event.data;
                         if (message.type === 'response') {
-                            addMessage('CodeMate: ' + message.text);
+                            addMessage(message.text, false);
                         }
                     });
-                </script>
-            </body>
-            </html>`;
+                })();
+            </script>
+        </body>
+        </html>`;
     }
 
     private async getAIResponse(query: string): Promise<string> {
@@ -113,8 +117,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 messages: [{
                     role: "system",
                     content: "You are a coding expert. Format your responses with:\n1. A positive opening statement\n2. Clear section headers using markdown (##)\n3. Code blocks with language specification\n4. Step-by-step explanations\n5. Example usage\n6. Expected output"
-                },
-                {
+                }, {
                     role: "user",
                     content: query
                 }],
@@ -128,10 +131,8 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
             });
 
             return response.data?.choices?.[0]?.message?.content || 'No response content';
-        } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                return `API Error: ${error.response?.data?.error?.message || error.message}`;
-            }
+        } catch (error) {
+            console.error('AI Response Error:', error);
             return 'Failed to get AI response. Please try again.';
         }
     }
