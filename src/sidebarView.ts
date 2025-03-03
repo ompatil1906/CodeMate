@@ -171,6 +171,25 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
                     addMessage(message.text, false);
                 }
             });
+
+            function copyCode(button) {
+                const codeBlock = button.closest('.code-block');
+                const code = codeBlock.querySelector('code').textContent;
+                
+                navigator.clipboard.writeText(code).then(() => {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'copy-feedback';
+                    feedback.textContent = 'Copied!';
+                    codeBlock.appendChild(feedback);
+                    
+                    button.textContent = 'Copied!';
+                    
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        feedback.remove();
+                    }, 2000);
+                });
+            }
         </script>
     </body>
     </html>

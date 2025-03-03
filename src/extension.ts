@@ -133,9 +133,9 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                       border-bottom-left-radius: 0;
                   }
                 .code-block {
-                    margin: 12px 0;
-                    background: var(--vscode-editor-background);
-                    border-radius: var(--chat-radius);
+                    position: relative;
+                    margin: 1em 0;
+                    border-radius: 6px;
                     overflow: hidden;
                 }
 
@@ -144,7 +144,43 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     justify-content: space-between;
                     align-items: center;
                     padding: 8px 12px;
-                    background: var(--vscode-titleBar-activeBackground);
+                    background: var(--vscode-editor-background);
+                    border-bottom: 1px solid var(--vscode-input-border);
+                }
+
+                .code-lang {
+                    font-size: 12px;
+                    color: var(--vscode-textPreformat-foreground);
+                }
+
+                .copy-button {
+                    padding: 4px 8px;
+                    font-size: 12px;
+                    color: var(--vscode-button-foreground);
+                    background: var(--vscode-button-background);
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: opacity 0.2s;
+                }
+
+                .copy-button:hover {
+                    opacity: 0.9;
+                }
+
+                .copy-feedback {
+                    position: absolute;
+                    right: 8px;
+                    top: 8px;
+                    padding: 4px 8px;
+                    background: var(--vscode-editor-background);
+                    border-radius: 4px;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                }
+
+                .copy-feedback.show {
+                    opacity: 1;
                 }
 
                 .code-content {
@@ -154,7 +190,6 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     line-height: 1.5;
                     overflow-x: auto;
                 }
-
                 .input-area {
                     padding: 16px;
                     background: var(--vscode-editor-background);
@@ -201,7 +236,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
             </div>
             <div id="chat"></div>
             <div class="input-container">
-                <input type="text" id="userInput" placeholder="Ask me anything about coding...">
+                <input type="text" id="userInput" placeholder="Ask me anything...">
                 <button id="sendButton">Send</button>
             </div>
             <script>
@@ -246,6 +281,43 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                     });
                 })();
             </script>
+            <script>
+                function copyCode(button) {
+                    const codeBlock = button.closest('.code-block');
+                    const codeContent = codeBlock.querySelector('code').textContent;
+                    
+                    navigator.clipboard.writeText(codeContent).then(() => {
+                        const originalText = button.textContent;
+                        button.textContent = 'Copied!';
+                        button.classList.add('copied');
+                        
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.classList.remove('copied');
+                        }, 1500);
+                    });
+                }
+            </script>
+            <style>
+                .copy-button {
+                    padding: 4px 8px;
+                    background: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.2s;
+                }
+
+                .copy-button.copied {
+                    background: var(--vscode-successBackground);
+                }
+
+                .copy-button:hover {
+                    opacity: 0.9;
+                }
+            </style>
         </body>
         </html>`;
     }
