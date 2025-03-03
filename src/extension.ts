@@ -317,6 +317,24 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 .copy-button:hover {
                     opacity: 0.9;
                 }
+
+                .send-button {
+                    background: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .send-button:hover {
+                    background: var(--vscode-button-hoverBackground);
+                    transform: translateY(-1px);
+                }
             </style>
         </body>
         </html>`;
