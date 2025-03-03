@@ -13,39 +13,14 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
       webviewView.webview.options = {
           enableScripts: true,
       };
-
-
-
-
       webviewView.webview.onDidReceiveMessage((message) => {
           if (message.type === "userInput") {
               this.handleMessage(message);
           }
       });
-
-
-
-
-
-
       webviewView.webview.html = this.getHtmlForWebview(webviewView.webview, this.context.extensionUri);
   }
-
-
-
-
-
-
   private async handleMessage(message: { type: string; text?: string }) {
-
-
-
-
-
-
-
-
-
       switch (message.type) {
           case "query":
               const response = await this.getAIResponse(message.text || "");
@@ -56,21 +31,6 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   }
 
   private formatResponse(response: string): string {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       response = response.replace(/(\w+)?\n([\s\S]*?)/g, (match, language, code) => {
           const lang = language ? ` class="language-${language}"` : '';
           return `<pre><code${lang}>${code.trim()}</code></pre>`;
@@ -87,22 +47,6 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
 
 
   private getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'marked.min.js'));
         
       return `
@@ -213,26 +157,4 @@ export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
           <p>This code can be used as a starting point for more complex programs.</p>
       `;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

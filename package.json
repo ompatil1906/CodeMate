@@ -4,6 +4,7 @@
   "description": "AI coding assistant that answers user queries using Groq API with LLaMA 3.",
   "version": "1.0.0",
   "publisher": "Om Patil",
+  "icon": "logo.png",
   "engines": {
     "vscode": "^1.75.0"
   },
