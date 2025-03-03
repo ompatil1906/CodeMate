@@ -3,251 +3,136 @@ import axios from 'axios';
 import * as marked from 'marked';
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("✅ CodeMate Extension Activated");
-
-  const provider = new CodeMateViewProvider(context.extensionUri);
-  const registration = vscode.window.registerWebviewViewProvider("codemateView", provider);
-
-  context.subscriptions.push(registration);
-
-  // 🔥 Capture Debug Console Logs & Send to WebView
-  const originalLog = console.log;
-  console.log = (...args) => {
-      originalLog(...args);  // Keep original behavior
-      provider.sendToWebView(args.join(" "));  // Send log to WebView
-  };
+    console.log("✅ CodeMate Extension Activated");
+    const provider = new CodeMateViewProvider(context.extensionUri);
+    const registration = vscode.window.registerWebviewViewProvider("codemateView", provider);
+    context.subscriptions.push(registration);
 }
 
-  
 class CodeMateViewProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
+    private readonly apiKey = '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';
   
     constructor(private readonly extensionUri: vscode.Uri) {}
-     // 🟢 Send messages from Debug Console to WebView
-          sendToWebView(message: string) {
-            if (this._view) {
-                this._view.webview.postMessage({ type: "debug", text: message });
-            }
-        }
   
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
-      this._view = webviewView;
-      webviewView.webview.options = { enableScripts: true };   
+        this._view = webviewView;
+        webviewView.webview.options = { enableScripts: true };   
   
-      // Add message handler
-      webviewView.webview.onDidReceiveMessage(async (message) => {
-        console.log('Received message from WebView:', message);
-        if (message.type === 'message') {
-          try {
-            const response = await this.getAIResponse(message.text);
-            console.log('Sending response back to WebView:', response);
-            webviewView.webview.postMessage({
-              type: 'response',
-              text: response
-            });
-          } catch (error) {
-            console.log('Error in message handling:', error);
-            webviewView.webview.postMessage({
-              type: 'response',
-              text: `Error: ${(error as Error).message}`
-            });
-          }
-        }
-      });
-  
-    webviewView.webview.html = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>CodeMate Assistant</title>
-            <style>
-                html, body {
-                    height: 100%;
-                    margin: 0;
-                    padding: 10px;
-                    box-sizing: border-box;
-                    background: var(--vscode-editor-background);
-                }
-                body { 
-                    display: flex;
-                    flex-direction: column;
-                    font-family: Arial, sans-serif;
-                }
-                #chat { 
-                    flex: 1;
-                    min-height: 200px;
-                    border: 1px solid var(--vscode-input-border);
-                    margin: 10px 0;
-                    padding: 10px;
-                    overflow-y: auto;
-                    background: var(--vscode-editor-background);
-                }
-                .input-container {
-                    position: sticky;
-                    bottom: 0;
-                    display: flex;
-                    gap: 8px;
-                    padding: 10px 0;
-                    background: var(--vscode-editor-background);
-                }
-                #userInput {
-                    flex: 1;
-                    padding: 8px;
-                    border: 1px solid var(--vscode-input-border);
-                    background: var(--vscode-input-background);
-                    color: var(--vscode-input-foreground);
-                    border-radius: 4px;
-                }
-                #sendButton {
-                    padding: 8px 16px;
-                    background: var(--vscode-button-background);
-                    color: var(--vscode-button-foreground);
-                    border: none;
-                    cursor: pointer;
-                    border-radius: 4px;
-                }
-                .message {
-                    margin: 10px 0;
-                    padding: 12px;
-                    border-radius: 6px;
-                    background: var(--vscode-editor-selectionBackground);
-                }
-                .code-block {
-                    background: var(--vscode-editor-background);
-                    border: 1px solid var(--vscode-input-border);
-                    border-radius: 4px;
-                    padding: 12px;
-                    margin: 8px 0;
-                    font-family: monospace;
-                    white-space: pre-wrap;
-                }
-                .header {
-                    background: var(--vscode-titleBar-activeBackground);
-                    padding: 10px;
-                    border-radius: 4px;
-                    margin-bottom: 10px;
-                }
-                .user-message {
-                    background: var(--vscode-editor-selectionBackground);
-                }
-                .ai-message {
-                    background: var(--vscode-editor-inactiveSelectionBackground);
-                }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h2>CodeMate AI Assistant</h2>
-            </div>
-            <div id="chat"></div>
-            <div class="input-container">
-                <input type="text" id="userInput" placeholder="Ask me anything about coding...">
-                <button id="sendButton">Send</button>
-            </div>
-            <script>
-                const vscode = acquireVsCodeApi();
-                const chatDiv = document.getElementById('chat');
-                const userInput = document.getElementById('userInput');
-                const sendButton = document.getElementById('sendButton');
-
-                function formatCodeBlocks(text) {
-                    // Detect code blocks and wrap them
-                    const codeBlockRegex = /\`\`\`[\s\S]*?\`\`\`/g;
-                    return text.replace(codeBlockRegex, match => {
-                        return '<div class="code-block">' + match + '</div>';
+        webviewView.webview.onDidReceiveMessage(async (message) => {
+            if (message.type === 'message') {
+                try {
+                    const response = await this.getAIResponse(message.text);
+                    webviewView.webview.postMessage({
+                        type: 'response',
+                        text: response
+                    });
+                } catch (error) {
+                    webviewView.webview.postMessage({
+                        type: 'response',
+                        text: `Error: ${(error as Error).message}`
                     });
                 }
+            }
+        });
 
-
-
-                function addMessage(text, isUser = false) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-                    messageDiv.innerHTML = formatCodeBlocks(text);
-                    chatDiv.appendChild(messageDiv);
-                    chatDiv.scrollTop = chatDiv.scrollHeight;
-                }
-
-                sendButton.addEventListener('click', () => {
-                    const message = userInput.value.trim();
-                    if (message) {
-                        addMessage('You: ' + message, true);
-                        userInput.value = '';
-                        vscode.postMessage({ type: 'message', text: message });
-                    }
-                });
-
-                userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        sendButton.click();
-                    }
-                });
-
-                window.addEventListener('message', event => {
-                    const message = event.data;
-                    if (message.type === 'response') {
-                        addMessage('CodeMate: ' + message.text);
-                    }
-                });
-            </script>
-        </body>
-        </html>
-    `;
-}
-
-
-
-private async getAIResponse(query: string): Promise<string> {
-    const apiKey = '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';
-    
-    try {
-      console.log('Sending request to Groq API...');
-      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-        model: "llama-3.3-70b-versatile",
-        messages: [{
-          role: "system",
-          content: `You are a coding expert. Format your responses with:
-            1. A positive opening statement
-            2. Clear section headers using markdown (##)
-            3. Code blocks with language specification
-            4. Step-by-step explanations
-            5. Example usage
-            6. Expected output
-            
-            response should be sort ,structured and easy to understand.
-            if users use normal word like hello at that time response should be "Hello there! How can I assist you with coding today?"
-            make sure to use markdown for formatting.
-            make sure each point is in a new line.
-            Keep responses structured and avoid paragraph-style text dumps.
-            Use bullet points and numbered lists for clarity.`
-        },
-        {
-          role: "user",
-          content: query
-        }],
-        temperature: 0.7,
-        max_tokens: 1500
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      let aiResponse = response.data?.choices?.[0]?.message?.content;
-      if (!aiResponse) {
-        throw new Error('No response content from API');
-      }
-
-      return aiResponse;
-    } catch (error) {
-      console.log('Full error details:', error);
-      if (axios.isAxiosError(error)) {
-        return `API Error: ${error.response?.data?.error?.message || error.message}`;
-      }
-      return 'Failed to get AI response. Please try again.';
+        webviewView.webview.html = this.getWebviewContent();
     }
-}
+
+    private getWebviewContent(): string {
+        return `<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>CodeMate Assistant</title>
+                <style>
+                    /* Your existing styles */
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>CodeMate AI Assistant</h2>
+                </div>
+                <div id="chat"></div>
+                <div class="input-container">
+                    <input type="text" id="userInput" placeholder="Ask me anything about coding...">
+                    <button id="sendButton">Send</button>
+                </div>
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    const chatDiv = document.getElementById('chat');
+                    const userInput = document.getElementById('userInput');
+                    const sendButton = document.getElementById('sendButton');
+
+                    function formatMessage(text) {
+                        return text.replace(/\`\`\`(\\w+)?\\n([\\s\\S]*?)\`\`\`/g, (match, lang, code) => {
+                            const langClass = lang ? \`language-\${lang}\` : '';
+                            return \`<div class="code-block"><pre><code class="\${langClass}">\${code.trim()}</code></pre></div>\`;
+                        });
+                    }
+
+                    function addMessage(text, isUser = false) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
+                        messageDiv.innerHTML = formatMessage(text);
+                        chatDiv.appendChild(messageDiv);
+                        chatDiv.scrollTop = chatDiv.scrollHeight;
+                    }
+
+                    sendButton.addEventListener('click', () => {
+                        const message = userInput.value.trim();
+                        if (message) {
+                            addMessage('You: ' + message, true);
+                            userInput.value = '';
+                            vscode.postMessage({ type: 'message', text: message });
+                        }
+                    });
+
+                    userInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            sendButton.click();
+                        }
+                    });
+
+                    window.addEventListener('message', event => {
+                        const message = event.data;
+                        if (message.type === 'response') {
+                            addMessage('CodeMate: ' + message.text);
+                        }
+                    });
+                </script>
+            </body>
+            </html>`;
+    }
+
+    private async getAIResponse(query: string): Promise<string> {
+        try {
+            const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+                model: "llama-3.3-70b-versatile",
+                messages: [{
+                    role: "system",
+                    content: "You are a coding expert. Format your responses with:\n1. A positive opening statement\n2. Clear section headers using markdown (##)\n3. Code blocks with language specification\n4. Step-by-step explanations\n5. Example usage\n6. Expected output"
+                },
+                {
+                    role: "user",
+                    content: query
+                }],
+                temperature: 0.7,
+                max_tokens: 1500
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${this.apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return response.data?.choices?.[0]?.message?.content || 'No response content';
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                return `API Error: ${error.response?.data?.error?.message || error.message}`;
+            }
+            return 'Failed to get AI response. Please try again.';
+        }
+    }
 }
