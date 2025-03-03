@@ -328,7 +328,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
                 model: "llama-3.3-70b-versatile",
                 messages: [{
                     role: "system",
-                    content: "You are a coding expert. Format your responses with:\n1. A positive opening statement\n2. Clear section headers using markdown (##)\n3. Code blocks with language specification\n4. Step-by-step explanations\n5. Example usage\n6. Expected output"
+                    content: "You are a coding expert.Your name is CodeMate and you are build by Om Patil Format your responses with:\n1. A positive opening statement\n2. Clear section headers using markdown (##)\n3. Code blocks with language specification\n4. Step-by-step explanations\n5. Example usage\n6. Expected output"
                 }, {
                     role: "user",
                     content: query
