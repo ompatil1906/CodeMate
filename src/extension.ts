@@ -52,10 +52,150 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
             <title>CodeMate Assistant</title>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.3/marked.min.js"></script>
             <style>
-                /* Your existing styles here */
+                :root {
+                    --chat-radius: 8px;
+                    --animation-speed: 0.3s;
+                }
+
+                .chat-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                    background: var(--vscode-editor-background);
+                }
+
+                .header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 16px;
+                    background: var(--vscode-titleBar-activeBackground);
+                    border-bottom: 1px solid var(--vscode-input-border);
+                }
+
+                .chat-messages {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                }
+
+                .message {
+                    max-width: 80%;
+                    padding: 12px 16px;
+                    border-radius: var(--chat-radius);
+                    animation: slideIn var(--animation-speed) ease-out;
+                }
+
+                .user-message {
+                    align-self: flex-end;
+                    background: var(--vscode-button-hoverBackground, #0E7ACC);
+                    color: var(--vscode-button-foreground);
+                    border-bottom-right-radius: 0;
+                    padding: 6px 10px; /* Reduced padding */
+                    font-size: 12px; /* Smaller font size */
+                    line-height: 1.3; /* Tighter line height */
+                    max-width: 60%; /* Reduced width */
+                    margin: 4px 0; /* Smaller vertical margins */
+                    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+                }
+
+                .message {
+                    gap: 8px; /* Reduced gap between messages */
+                    margin: 6px 0; /* Smaller margin between messages */
+                }
+
+                /* Ensure code blocks inside user messages stay compact */
+                .user-message pre,
+                .user-message code {
+                    margin: 4px 0;
+                    padding: 4px 6px;
+                    font-size: 11px;
+                }
+
+                .user-message code {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                }
+
+                .user-message:hover {
+                    background: var(--vscode-button-secondaryHoverBackground, #1177BB);
+                    transition: background 0.2s ease;
+                }
+                  .ai-message {
+                      align-self: flex-start;
+                      background: var(--vscode-editor-inactiveSelectionBackground);
+                      color: var(--vscode-editor-foreground);
+                      border: 1px solid var(--vscode-input-border);
+                      border-bottom-left-radius: 0;
+                  }
+                .code-block {
+                    margin: 12px 0;
+                    background: var(--vscode-editor-background);
+                    border-radius: var(--chat-radius);
+                    overflow: hidden;
+                }
+
+                .code-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 12px;
+                    background: var(--vscode-titleBar-activeBackground);
+                }
+
+                .code-content {
+                    padding: 12px;
+                    font-family: var(--vscode-editor-font-family);
+                    font-size: 13px;
+                    line-height: 1.5;
+                    overflow-x: auto;
+                }
+
+                .input-area {
+                    padding: 16px;
+                    background: var(--vscode-editor-background);
+                    border-top: 1px solid var(--vscode-input-border);
+                }
+
+                .input-container {
+                    display: flex;
+                    gap: 8px;
+                    padding: 8px;
+                    background: var(--vscode-input-background);
+                    border-radius: var(--chat-radius);
+                }
+
+                #userInput {
+                    flex: 1;
+                    border: none;
+                    background: transparent;
+                    color: var(--vscode-input-foreground);
+                    font-family: inherit;
+                    font-size: 14px;
+                    padding: 8px;
+                }
+
+                #userInput:focus {
+                    outline: none;
+                }
+
+                @keyframes slideIn {
+                    from { 
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to { 
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
             </style>
-        </head>
-        <body>
+                    </head>
+                    <body>
             <div class="header">
                 <h2>CodeMate AI Assistant</h2>
             </div>
