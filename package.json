@@ -21,14 +21,6 @@
     "onView:codemateView",
     "onStartupFinished"
   ],
-  "files": [
-    "LICENSE",
-    "dist/**/*",
-    "README.md",
-    "package.json",
-    "resources/dark/codemate.svg",
-    "extension/**/*"
-  ],
   "main": "dist/extension.js",
   "contributes": {
     "commands": [
