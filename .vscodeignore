@@ -1,0 +1,16 @@
+# Exclude all source TypeScript files and maps since you'll bundle them
+*/.ts
+*/.js.map
+
+# Exclude configuration and build files
+tsconfig.json
+webpack.config.js
+
+# Exclude VS Code project settings
+.vscode/**
+.git/**
+.gitignore
+
+# Exclude tests and demo assets if not needed
+tests/**
+demo/**
