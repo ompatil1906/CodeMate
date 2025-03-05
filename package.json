@@ -6,7 +6,7 @@
 
   "description": "AI coding assistant that answers user queries using Groq API with LLaMA 3.",
 
-  "version": "1.0.0",
+  "version": "1.0.1",
 
   "publisher": "OmPatil",
 
@@ -47,10 +47,15 @@
   "files": [
 
     "LICENSE",
+
     "dist/**/*",
+
     "README.md",
+
     "package.json",
+
     "resources/dark/codemate.svg",
+
     "extension/**/*"
 
   ],
@@ -164,3 +169,4 @@
   }
 
 }
+
