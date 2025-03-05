@@ -17,10 +17,11 @@
     "Programming Languages"
   ],
   "files": [
-  "dist/**/*",
-  "README.md",
-  "package.json",
-  "resources/dark/codemate.svg"
+    "LICENSE",
+    "dist/**/*",
+    "README.md",
+    "package.json",
+    "resources/dark/codemate.svg"
   ],
   "main": "dist/extension.js",
   "contributes": {
