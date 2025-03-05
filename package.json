@@ -19,7 +19,7 @@
   "files": [
     "resources/**/*"
   ],
-  "main": "./dist/extension.js",
+  "main": "dist/extension.js",
   "contributes": {
     "commands": [
       {
