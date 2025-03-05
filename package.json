@@ -43,7 +43,7 @@
     },
     "views": {
       "codemate": [
-        {
+        {"type": "webview",
           "id": "codemateView",
           "name": "CodeMate Assistant"
         }
