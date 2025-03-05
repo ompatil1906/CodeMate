@@ -1,5 +1,5 @@
 {
-  "name": "codemate",
+  "name": "codemate-ai",
   "displayName": "CodeMate AI Assistant",
   "description": "AI coding assistant that answers user queries using Groq API with LLaMA 3.",
   "version": "1.0.0",
