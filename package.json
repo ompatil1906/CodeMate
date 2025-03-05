@@ -21,7 +21,8 @@
     "dist/**/*",
     "README.md",
     "package.json",
-    "resources/dark/codemate.svg"
+    "resources/dark/codemate.svg",
+    "extension/**/*"
   ],
   "main": "dist/extension.js",
   "contributes": {
