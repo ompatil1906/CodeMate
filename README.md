@@ -1,23 +1,66 @@
-# CodeMate AI Assistant
+# CodeMate
 
-An AI-powered coding assistant for VS Code using the Groq API with LLaMA 3.
+CodeMate is your intelligent coding companion that helps streamline development workflows and enhance productivity through smart code assistance.
 
 ## Features
-- Select a file using `@` and ask AI-based questions
-- Reads file content and queries Groq API for answers
-- Supports LLaMA 3 for intelligent responses
 
-## Setup
-1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Replace `your-groq-api-key` in `extension.ts`
-4. Compile using `npm run compile`
-5. Run the extension in VS Code using `F5`
+- Intelligent Code Completion
+- Real-time Code Analysis
+- Multiple Programming Language Support
+- Code Snippets Library
+- Project Management Tools
+- Customizable Settings
+
+## Installation
+
+```bash
+git clone https://github.com/ompatil1906/CodeMate
+```
 
 ## Usage
-- Run `CodeMate: Query File` from the command palette (Ctrl+Shift+P)
-- Select a file and enter a query
-- Get AI-generated responses
+
+1. Start CodeMate in your development environment
+2. Access features through the command palette
+3. Use smart completions as you code
+4. Save and manage your code snippets
+
+## Requirements
+
+- Node.js v14.0 or higher
+- Modern web browser
+- 4GB RAM minimum
+- Internet connection for updates
+
+## Configuration
+
+1. Open CodeMate settings
+2. Customize your preferences
+3. Set up language-specific configurations
+4. Configure auto-save and backup options
+
+## Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. Fork the repository
+2. Create your feature branch
+3. Submit a pull request
+4. Follow our coding standards
 
 ## License
-MIT License.
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Contact
+
+- Developer: Om Patil
+- Email: patilom1906@gmail.com
+- Project Link: https://github.com/ompatil1906/CodeMate
+- Issues: https://github.com/ompatil1906/CodeMate/issues
+
+## Acknowledgments
+
+- Thanks to all contributors
+- Inspired by modern development workflows
+- Built with ❤️ for developers
+
