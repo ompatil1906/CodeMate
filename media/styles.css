@@ -2,20 +2,36 @@
     --chat-radius: 8px;
     --animation-speed: 0.3s;
 }
+
+/* Main container styles */
 .chat-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     background: var(--vscode-editor-background);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-editor-foreground);
 }
+
+/* Header section */
 .header {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 16px;
     background: var(--vscode-titleBar-activeBackground);
+    color: var(--vscode-titleBar-activeForeground);
     border-bottom: 1px solid var(--vscode-input-border);
 }
+
+.header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+/* Chat messages area */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -24,24 +40,26 @@
     flex-direction: column;
     gap: 16px;
 }
+
+/* Message bubbles */
 .message {
     max-width: 80%;
     padding: 12px 16px;
     border-radius: var(--chat-radius);
     animation: slideIn var(--animation-speed) ease-out;
+    line-height: 1.5;
+    word-wrap: break-word;
 }
+
 .user-message {
     align-self: flex-end;
-    background: var(--vscode-button-hoverBackground, #0E7ACC);
+    background: var(--vscode-button-background);
     color: var(--vscode-button-foreground);
     border-bottom-right-radius: 0;
-    padding: 6px 10px;
-    font-size: 12px;
-    line-height: 1.3;
-    max-width: 60%;
     margin: 4px 0;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
+
 .ai-message {
     align-self: flex-start;
     background: var(--vscode-editor-inactiveSelectionBackground);
@@ -49,17 +67,17 @@
     border: 1px solid var(--vscode-input-border);
     border-bottom-left-radius: 0;
 }
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+
+/* Input area */
 .input-container {
     display: flex;
     gap: 8px;
     padding: 8px;
     background: var(--vscode-input-background);
     border-radius: var(--chat-radius);
+    border-top: 1px solid var(--vscode-input-border);
 }
+
 #userInput {
     flex: 1;
     border: none;
@@ -69,21 +87,160 @@
     font-size: 14px;
     padding: 8px;
 }
+
 #userInput:focus {
     outline: none;
 }
-pre {
-    background: var(--vscode-editor-background);
-    border-radius: 4px;
-    padding: 12px;
-    position: relative;
+
+#sendButton {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
 }
+
+#sendButton:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Copy button styles */
+/* Code block styles */
+.code-block {
+    position: relative;
+    margin: 1em 0;
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--vscode-editorLineNumber-activeForeground);
+    color: var(--vscode-editor-foreground);
+    font-size: 0.85em;
+}
+
 .copy-button {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.copy-button:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+.copy-icon {
+    font-size: 1.1em;
+}
+
+.copy-notification {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
+    background: var(--vscode-activityBarBadge-background);
+    color: var(--vscode-activityBarBadge-foreground);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+pre {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    background: var(--vscode-editor-background);
+}
+code {
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+}
+
+/* Text formatting */
+h1 {
+    font-size: 1.5em;
+    margin: 1em 0 0.5em;
     color: var(--vscode-editor-foreground);
+    border-bottom: 1px solid var(--vscode-input-border);
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.3em;
+    margin: 1em 0 0.5em;
+    color: var(--vscode-editor-foreground);
+}
+
+h3 {
+    font-size: 1.1em;
+    margin: 0.8em 0 0.3em;
+    color: var(--vscode-editor-foreground);
+}
+
+p {
+    margin: 0.8em 0;
+    line-height: 1.5;
+}
+
+ul, ol {
+    margin: 0.8em 0;
+    padding-left: 1.5em;
+}
+
+li {
+    margin: 0.3em 0;
+}
+
+strong {
+    font-weight: bold;
+    color: var(--vscode-editor-foreground);
+}
+
+em {
+    font-style: italic;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--vscode-input-border);
+    margin: 1.5em 0;
+}
+
+/* Scrollbar styling */
+.chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: var(--vscode-scrollbarSlider-background);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-activeBackground);
+    border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
 }

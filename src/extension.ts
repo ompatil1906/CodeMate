@@ -83,7 +83,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
     <meta http-equiv="Content-Security-Policy" 
           content="default-src 'none';
                   style-src ${webview.cspSource} 'unsafe-inline';
-                  script-src 'nonce-${nonce}' ${webview.cspSource};
+                  script-src 'nonce-${nonce}' ${webview.cspSource} 'unsafe-inline';
                   font-src ${webview.cspSource};
                   img-src ${webview.cspSource} https:;">
     <title>CodeMate AI Assistant</title>
@@ -153,12 +153,14 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
             .replace(/^## (.*)(\n|$)/gm, '<h2>$1</h2>')
             .replace(/^### (.*)(\n|$)/gm, '<h3>$1</h3>')
             
-            // Code blocks with language
+            // Code blocks with copy functionality
             .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
                 lang = lang || '';
-                return `<div class="code-block">
-                          <div class="code-header">${lang || 'code'}</div>
+                const randomId = Math.random().toString(36).substring(2, 9);
+                return `<div class="code-block" data-code-id="${randomId}">
+                          
                           <pre><code class="language-${lang}">${this.escapeHtml(code.trim())}</code></pre>
+                          <div class="copy-notification" id="notification-${randomId}"></div>
                         </div>`;
             })
             
@@ -167,17 +169,14 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
             
             // Lists
             .replace(/^(\s*)- (.*$)/gm, '<li>$2</li>')
-            .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')  // Changed from /s to [\s\S]
+            .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
             
             // Text formatting
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             
             // Paragraphs
-            .replace(/([^\n]+\n+)/g, '<p>$1</p>')
-            
-            // Horizontal rules
-            .replace(/^-{3,}$/gm, '<hr>');
+            .replace(/([^\n]+\n+)/g, '<p>$1</p>');
             
         return formatted;
     }
@@ -195,7 +194,7 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
         if (this.messageHistory.length === 0) {
             this.messageHistory.push({
                 role: "system",
-                content: `You are CodeMate, an expert AI coding assistant. Strictly format responses using:
+                content: `You are CodeMate, an expert AI coding assistant.Developed By Om Patil. Strictly format responses using:
 
 # Main Title (H1)
 ## Section Heading (H2)
@@ -219,7 +218,8 @@ Always:
 2. Separate concepts with blank lines
 3. Format code with proper syntax highlighting
 4. Use consistent spacing throughout
-5. Keep paragraphs concise (2-3 sentences max)`
+5. Keep paragraphs concise (2-3 sentences max)
+6. Do not divide code into multiple parts give one code.`
             });
         }
 

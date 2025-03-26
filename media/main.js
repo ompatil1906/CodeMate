@@ -8,16 +8,22 @@
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
         
-        // Process the formatted content
-        messageDiv.innerHTML = content;
+        // Process markdown and code blocks
+        const processedContent = content
+            .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                return `<pre><code class="language-${lang || ''}">${escapeHtml(code)}</code></pre>`;
+            })
+            .replace(/`([^`]+)`/g, '<code>$1</code>');
         
-        // Apply syntax highlighting to all code blocks
+        messageDiv.innerHTML = processedContent;
+        chatDiv.appendChild(messageDiv);
+        
+        // Apply syntax highlighting
         document.querySelectorAll('pre code').forEach(block => {
             hljs.highlightElement(block);
-            addCopyButton(block.parentElement.parentElement);
+            addCopyButton(block.parentElement);
         });
         
-        chatDiv.appendChild(messageDiv);
         scrollToBottom();
     }
 
