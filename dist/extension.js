@@ -9,387 +9,218 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activate = void 0;
+exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const axios_1 = require("axios");
+var MessageType;
+(function (MessageType) {
+    MessageType["User"] = "userMessage";
+    MessageType["AI"] = "aiResponse";
+    MessageType["Error"] = "error";
+    MessageType["Loading"] = "loading";
+})(MessageType || (MessageType = {}));
 function activate(context) {
-    console.log("✅ CodeMate Extension Activated");
+    console.log('✅ CodeMate extension activated');
     const provider = new CodeMateViewProvider(context.extensionUri);
-    const registration = vscode.window.registerWebviewViewProvider("codemateView", provider);
-    context.subscriptions.push(registration);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider(CodeMateViewProvider.viewType, provider));
 }
 exports.activate = activate;
+function deactivate() {
+    console.log('❌ CodeMate extension deactivated');
+}
+exports.deactivate = deactivate;
 class CodeMateViewProvider {
     constructor(extensionUri) {
         this.extensionUri = extensionUri;
+        this.messageHistory = [];
+        this.disposables = [];
         this.apiKey = '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';
+        this.aiConfig = {
+            model: "llama3-70b-8192",
+            temperature: 0.7,
+            max_tokens: 2000
+        };
     }
     resolveWebviewView(webviewView, context, _token) {
         this._view = webviewView;
-        webviewView.webview.options = { enableScripts: true };
-        webviewView.webview.html = this.getHtmlContent();
-        webviewView.webview.onDidReceiveMessage((message) => __awaiter(this, void 0, void 0, function* () {
-            if (message.type === 'message') {
-                try {
-                    const response = yield this.getAIResponse(message.text);
-                    webviewView.webview.postMessage({
-                        type: 'response',
-                        text: response
-                    });
-                }
-                catch (error) {
-                    webviewView.webview.postMessage({
-                        type: 'response',
-                        text: `Error: ${error instanceof Error ? error.message : String(error)}`
-                    });
-                }
-            }
-        }));
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [this.extensionUri]
+        };
+        webviewView.webview.html = this.getWebviewContent(webviewView.webview);
+        this.disposables.push(webviewView.webview.onDidReceiveMessage(message => this.handleWebviewMessage(message, webviewView)));
     }
-    getHtmlContent() {
+    getWebviewContent(webview) {
+        const nonce = getNonce();
+        const stylesUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'styles.css'));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'main.js'));
+        const highlightJsUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'highlight.min.js'));
+        const highlightCssUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'highlight.css'));
         return `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>CodeMate Assistant</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.3/marked.min.js"></script>
-            <style>
-                :root {
-                    --chat-radius: 8px;
-                    --animation-speed: 0.3s;
-                }
-
-                .chat-container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100vh;
-                    background: var(--vscode-editor-background);
-                }
-
-                .header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 16px;
-                    background: var(--vscode-titleBar-activeBackground);
-                    border-bottom: 1px solid var(--vscode-input-border);
-                }
-
-                .chat-messages {
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: 16px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 16px;
-                }
-
-                .message {
-                    max-width: 80%;
-                    padding: 12px 16px;
-                    border-radius: var(--chat-radius);
-                    animation: slideIn var(--animation-speed) ease-out;
-                }
-
-                .user-message {
-                    align-self: flex-end;
-                    background: var(--vscode-button-hoverBackground, #0E7ACC);
-                    color: var(--vscode-button-foreground);
-                    border-bottom-right-radius: 0;
-                    padding: 6px 10px; /* Reduced padding */
-                    font-size: 12px; /* Smaller font size */
-                    line-height: 1.3; /* Tighter line height */
-                    max-width: 60%; /* Reduced width */
-                    margin: 4px 0; /* Smaller vertical margins */
-                    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-                }
-
-                .message {
-                    gap: 8px; /* Reduced gap between messages */
-                    margin: 6px 0; /* Smaller margin between messages */
-                }
-
-                /* Ensure code blocks inside user messages stay compact */
-                .user-message pre,
-                .user-message code {
-                    margin: 4px 0;
-                    padding: 4px 6px;
-                    font-size: 11px;
-                }
-
-                .user-message code {
-                    background: rgba(255, 255, 255, 0.1);
-                    padding: 2px 4px;
-                    border-radius: 3px;
-                }
-
-                .user-message:hover {
-                    background: var(--vscode-button-secondaryHoverBackground, #1177BB);
-                    transition: background 0.2s ease;
-                }
-                  .ai-message {
-                      align-self: flex-start;
-                      background: var(--vscode-editor-inactiveSelectionBackground);
-                      color: var(--vscode-editor-foreground);
-                      border: 1px solid var(--vscode-input-border);
-                      border-bottom-left-radius: 0;
-                  }
-                .code-block {
-                    position: relative;
-                    margin: 1em 0;
-                    border-radius: 6px;
-                    overflow: hidden;
-                }
-
-                .code-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 8px 12px;
-                    background: var(--vscode-editor-background);
-                    border-bottom: 1px solid var(--vscode-input-border);
-                }
-
-                .code-lang {
-                    font-size: 12px;
-                    color: var(--vscode-textPreformat-foreground);
-                }
-
-                .copy-button {
-                    padding: 4px 8px;
-                    font-size: 12px;
-                    color: var(--vscode-button-foreground);
-                    background: var(--vscode-button-background);
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: opacity 0.2s;
-                }
-
-                .copy-button:hover {
-                    opacity: 0.9;
-                }
-
-                .copy-feedback {
-                    position: absolute;
-                    right: 8px;
-                    top: 8px;
-                    padding: 4px 8px;
-                    background: var(--vscode-editor-background);
-                    border-radius: 4px;
-                    opacity: 0;
-                    transition: opacity 0.2s;
-                }
-
-                .copy-feedback.show {
-                    opacity: 1;
-                }
-
-                .code-content {
-                    padding: 12px;
-                    font-family: var(--vscode-editor-font-family);
-                    font-size: 13px;
-                    line-height: 1.5;
-                    overflow-x: auto;
-                }
-                .input-area {
-                    padding: 16px;
-                    background: var(--vscode-editor-background);
-                    border-top: 1px solid var(--vscode-input-border);
-                }
-
-                .input-container {
-                    display: flex;
-                    gap: 8px;
-                    padding: 8px;
-                    background: var(--vscode-input-background);
-                    border-radius: var(--chat-radius);
-                }
-
-                #userInput {
-                    flex: 1;
-                    border: none;
-                    background: transparent;
-                    color: var(--vscode-input-foreground);
-                    font-family: inherit;
-                    font-size: 14px;
-                    padding: 8px;
-                }
-
-                #userInput:focus {
-                    outline: none;
-                }
-
-                @keyframes slideIn {
-                    from { 
-                        opacity: 0;
-                        transform: translateY(10px);
-                    }
-                    to { 
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-            </style>
-                    </head>
-                    <body>
-            <div class="header">
-                <h2>CodeMate AI Assistant</h2>
-            </div>
-            <div id="chat"></div>
-            <div class="input-container">
-                <input type="text" id="userInput" placeholder="Ask me anything...">
-                <button id="sendButton">Send</button>
-            </div>
-            <script>
-                (function() {
-                    const vscode = acquireVsCodeApi();
-                    const chatDiv = document.getElementById('chat');
-                    const userInput = document.getElementById('userInput');
-                    const sendButton = document.getElementById('sendButton');
-
-                    function formatMessage(text) {
-                        return marked.parse(text);
-                    }
-
-                    function addMessage(text, isUser) {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-                        messageDiv.innerHTML = formatMessage(text);
-                        chatDiv.appendChild(messageDiv);
-                        chatDiv.scrollTop = chatDiv.scrollHeight;
-                    }
-
-                    sendButton.addEventListener('click', () => {
-                        const message = userInput.value.trim();
-                        if (message) {
-                            addMessage(message, true);
-                            userInput.value = '';
-                            vscode.postMessage({ type: 'message', text: message });
-                        }
-                    });
-
-                    userInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            sendButton.click();
-                        }
-                    });
-
-                    window.addEventListener('message', event => {
-                        const message = event.data;
-                        if (message.type === 'response') {
-                            addMessage(message.text, false);
-                        }
-                    });
-                })();
-            </script>
-            <script>
-                function copyCode(button) {
-                    const codeBlock = button.closest('.code-block');
-                    const codeContent = codeBlock.querySelector('code').textContent;
-                    
-                    navigator.clipboard.writeText(codeContent).then(() => {
-                        const originalText = button.textContent;
-                        button.textContent = 'Copied!';
-                        button.classList.add('copied');
-                        
-                        setTimeout(() => {
-                            button.textContent = originalText;
-                            button.classList.remove('copied');
-                        }, 1500);
-                    });
-                }
-            </script>
-            <style>
-                .copy-button {
-                    padding: 4px 8px;
-                    background: var(--vscode-button-background);
-                    color: var(--vscode-button-foreground);
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                    transition: all 0.2s;
-                }
-
-                .copy-button.copied {
-                    background: var(--vscode-successBackground);
-                }
-
-                .copy-button:hover {
-                    opacity: 0.9;
-                }
-
-                .send-button {
-                    background: var(--vscode-button-background);
-                    color: var(--vscode-button-foreground);
-                    border: none;
-                    border-radius: 8px;
-                    padding: 8px 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                }
-
-                .send-button:hover {
-                    background: var(--vscode-button-hoverBackground);
-                    transform: translateY(-1px);
-                }
-            </style>
-        </body>
-        </html>`;
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'none';
+                  style-src ${webview.cspSource} 'unsafe-inline';
+                  script-src 'nonce-${nonce}' ${webview.cspSource};
+                  font-src ${webview.cspSource};
+                  img-src ${webview.cspSource} https:;">
+    <title>CodeMate AI Assistant</title>
+    <link href="${stylesUri}" rel="stylesheet">
+    <link href="${highlightCssUri}" rel="stylesheet">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h2>CodeMate AI Assistant</h2>
+        </div>
+        <div class="chat-messages" id="chat"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Ask me anything about coding...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+    <script nonce="${nonce}" src="${highlightJsUri}"></script>
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>`;
+    }
+    handleWebviewMessage(message, webviewView) {
+        return __awaiter(this, void 0, void 0, function* () {
+            switch (message.type) {
+                case MessageType.User:
+                    yield this.handleUserMessage(message.content, webviewView);
+                    break;
+            }
+        });
+    }
+    handleUserMessage(content, webviewView) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                webviewView.webview.postMessage({
+                    type: MessageType.Loading,
+                    loading: true
+                });
+                const response = yield this.getAIResponse(content);
+                webviewView.webview.postMessage({
+                    type: MessageType.AI,
+                    content: this.formatResponse(response)
+                });
+            }
+            catch (error) {
+                console.error('Error processing AI response:', error);
+                webviewView.webview.postMessage({
+                    type: MessageType.Error,
+                    content: error instanceof Error ? error.message : 'Unknown error occurred'
+                });
+            }
+            finally {
+                webviewView.webview.postMessage({
+                    type: MessageType.Loading,
+                    loading: false
+                });
+            }
+        });
+    }
+    formatResponse(response) {
+        // First normalize line endings
+        response = response.replace(/\r\n/g, '\n');
+        // Process markdown formatting
+        let formatted = response
+            // Headers
+            .replace(/^# (.*)(\n|$)/gm, '<h1>$1</h1>')
+            .replace(/^## (.*)(\n|$)/gm, '<h2>$1</h2>')
+            .replace(/^### (.*)(\n|$)/gm, '<h3>$1</h3>')
+            // Code blocks with language
+            .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+            lang = lang || '';
+            return `<div class="code-block">
+                          <div class="code-header">${lang || 'code'}</div>
+                          <pre><code class="language-${lang}">${this.escapeHtml(code.trim())}</code></pre>
+                        </div>`;
+        })
+            // Inline code
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            // Lists
+            .replace(/^(\s*)- (.*$)/gm, '<li>$2</li>')
+            .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>') // Changed from /s to [\s\S]
+            // Text formatting
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            // Paragraphs
+            .replace(/([^\n]+\n+)/g, '<p>$1</p>')
+            // Horizontal rules
+            .replace(/^-{3,}$/gm, '<hr>');
+        return formatted;
+    }
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
     getAIResponse(query) {
         var _a, _b, _c, _d;
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield axios_1.default.post('https://api.groq.com/openai/v1/chat/completions', {
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{
-                            role: "system",
-                            content: `You are CodeMate, an expert AI coding assistant built by Om Patil, specializing in software development, debugging, and best practices. Your goal is to provide clear, structured, and actionable coding assistance.
+            if (this.messageHistory.length === 0) {
+                this.messageHistory.push({
+                    role: "system",
+                    content: `You are CodeMate, an expert AI coding assistant. Strictly format responses using:
 
-                                    Key Guidelines:
-                                    Always break down complex topics into easy-to-understand explanations.
-                                    Use proper markdown formatting with ## for main sections and ### for subsections.
-                                    Include code snippets in appropriate language-specific blocks.
-                                    Follow clean code principles, add comments for clarity, and showcase real-world applications.
-                                    If an error is detected, explain the issue, provide a corrected version, and suggest improvements.
-                                    Avoid giving code if the user asks general (non-coding) questions.
-                                    Response Structure:
-                                    Brief, positive introduction
-                                    Concept explanation (if needed)
-                                    Well-formatted code examples with comments
-                                    Practical use cases & expected output
-                                    Best practices or next steps
-                                    Expertise Areas:
-                                    Software Development (Python, JavaScript, etc.)
-                                    Debugging & Testing
-                                    Performance Optimization
-                                    Design Patterns & Best Practices
-                                    Modern Development Tools
-                                    Stay concise, professional, and developer-friendly!`
-                        }, {
-                            role: "user",
-                            content: query
-                        }],
-                    temperature: 0.7,
-                    max_tokens: 1500
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json'
-                    }
+# Main Title (H1)
+## Section Heading (H2)
+### Subsection (H3)
+
+For code blocks:
+\`\`\`language
+// Code here
+\`\`\`
+
+For lists:
+- Bullet points
+- With clear spacing
+
+For emphasis:
+**Bold** for important terms
+*Italic* for subtle emphasis
+
+Always:
+1. Use clear section headers
+2. Separate concepts with blank lines
+3. Format code with proper syntax highlighting
+4. Use consistent spacing throughout
+5. Keep paragraphs concise (2-3 sentences max)`
                 });
-                return ((_d = (_c = (_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a.choices) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.message) === null || _d === void 0 ? void 0 : _d.content) || 'No response content';
             }
-            catch (error) {
-                console.error('AI Response Error:', error);
-                return 'Failed to get AI response. Please try again.';
+            this.messageHistory.push({ role: 'user', content: query });
+            const response = yield axios_1.default.post('https://api.groq.com/openai/v1/chat/completions', Object.assign(Object.assign({}, this.aiConfig), { messages: this.messageHistory }), {
+                headers: {
+                    'Authorization': `Bearer ${this.apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const aiResponse = (_d = (_c = (_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a.choices) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.message) === null || _d === void 0 ? void 0 : _d.content;
+            if (!aiResponse) {
+                throw new Error('No response content from AI');
             }
+            this.messageHistory.push({ role: 'assistant', content: aiResponse });
+            return aiResponse;
         });
     }
+    dispose() {
+        this.disposables.forEach(d => d.dispose());
+    }
+}
+CodeMateViewProvider.viewType = 'codemateView';
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }
