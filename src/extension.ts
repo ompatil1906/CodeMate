@@ -149,16 +149,21 @@ class CodeMateViewProvider implements vscode.WebviewViewProvider {
         // Process markdown formatting
         let formatted = response
             // Headers
-            .replace(/^# (.*)(\n|$)/gm, '<h1>$1</h1>')
-            .replace(/^## (.*)(\n|$)/gm, '<h2>$1</h2>')
-            .replace(/^### (.*)(\n|$)/gm, '<h3>$1</h3>')
+            .replace(/^# (.*)(\n|$)/gm, (match, p1) => {
+                return !match.startsWith('```') ? `<h1>${p1}</h1>` : match;
+            })
+            .replace(/^## (.*)(\n|$)/gm, (match, p1) => {
+                return !match.startsWith('```') ? `<h2>${p1}</h2>` : match;
+            })
+            .replace(/^### (.*)(\n|$)/gm, (match, p1) => {
+                return !match.startsWith('```') ? `<h3>${p1}</h3>` : match;
+            })
             
             // Code blocks with copy functionality
             .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
                 lang = lang || '';
                 const randomId = Math.random().toString(36).substring(2, 9);
                 return `<div class="code-block" data-code-id="${randomId}">
-                          
                           <pre><code class="language-${lang}">${this.escapeHtml(code.trim())}</code></pre>
                           <div class="copy-notification" id="notification-${randomId}"></div>
                         </div>`;
@@ -219,7 +224,25 @@ Always:
 3. Format code with proper syntax highlighting
 4. Use consistent spacing throughout
 5. Keep paragraphs concise (2-3 sentences max)
-6. Do not divide code into multiple parts give one code.`
+6. Do not divide code into multiple parts give one code.
+7. use comment instead of headers.
+
+Example of GOOD formatting:
+\`\`\`python
+def hello_world():
+    print("Hello, World!")
+
+hello_world()
+\`\`\`
+
+Example of BAD formatting:
+\`\`\`python
+# <h1> tag inside code (WRONG)
+# Header inside code (WRONG)
+# This is bad practice
+def hello_world():
+\`\`\`
+... (code continues in another block)`
             });
         }
 
