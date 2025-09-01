@@ -10,6 +10,7 @@ webpack.config.js
 .vscode/**
 .git/**
 .gitignore
+.env
 
 # Exclude tests and demo assets if not needed
 tests/**
