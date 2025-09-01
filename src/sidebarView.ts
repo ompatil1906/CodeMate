@@ -4,8 +4,15 @@ import * as marked from 'marked';
 export class CodeMateSidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "codemateView";
   private _view?: vscode.WebviewView;
+  private apiKey: string;
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(private readonly context: vscode.ExtensionContext) {
+    this.apiKey = process.env.GROQ_API_KEY || '';
+    if (!this.apiKey) {
+        vscode.window.showErrorMessage('Groq API Key not found. Please set the GROQ_API_KEY environment variable.');
+        throw new Error('Groq API Key not found.');
+    }
+  }
 
   resolveWebviewView(webviewView: vscode.WebviewView) {
 

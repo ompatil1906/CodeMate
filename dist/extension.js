@@ -34,7 +34,11 @@ class CodeMateViewProvider {
         this.extensionUri = extensionUri;
         this.messageHistory = [];
         this.disposables = [];
-        this.apiKey = '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';
+        this.apiKey = process.env.GROQ_API_KEY || '';
+        if (!this.apiKey) {
+            vscode.window.showErrorMessage('Groq API Key not found. Please set the GROQ_API_KEY environment variable.');
+            throw new Error('Groq API Key not found.');
+        }
         this.aiConfig = {
             model: "llama-3.3-70b-versatile",
             temperature: 0.7,
