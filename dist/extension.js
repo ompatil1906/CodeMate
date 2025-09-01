@@ -36,7 +36,7 @@ class CodeMateViewProvider {
         this.disposables = [];
         this.apiKey = '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';
         this.aiConfig = {
-            model: "llama3-70b-8192",
+            model: "llama-3.3-70b-versatile",
             temperature: 0.7,
             max_tokens: 2000
         };

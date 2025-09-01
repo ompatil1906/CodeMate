@@ -2,7 +2,7 @@
   "name": "codemate-ai",
   "displayName": "CodeMate AI Assistant",
   "description": "AI coding assistant that answers user queries using Groq API with LLaMA 3.",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "publisher": "OmPatil",
   "icon": "extension/logo.png",
   "engines": {
