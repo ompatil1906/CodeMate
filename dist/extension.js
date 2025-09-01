@@ -34,7 +34,7 @@ class CodeMateViewProvider {
         this.extensionUri = extensionUri;
         this.messageHistory = [];
         this.disposables = [];
-        this.apiKey = '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';
+        this.apiKey = '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';
         this.aiConfig = {
             model: "llama3-70b-8192",
             temperature: 0.7,
